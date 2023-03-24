@@ -66,44 +66,39 @@ class myPlayer(PlayerInterface):
 
 
     def alpha_beta(self, board, depth, alpha, beta, maximizingPlayer):
-        print("apezroubpouazpvfuazqpomubazMLJBE")
-        if (depth == 0 or board.is_game_over()):
-            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBest move : ", board._historyMoveNames[-1])
-            return (board._historyMoveNames[-1], self.hand_made_heuristique(board, maximizingPlayer))
-        if (maximizingPlayer):
-            value = -1000000000
-            for move in (self._board.legal_moves()):
+        if depth == 0 or board.is_game_over():
+            return board._historyMoveNames[-1], self.hand_made_heuristique(board, maximizingPlayer)
+
+        if maximizingPlayer:
+            value = float('-inf')
+            best_move = None
+            for move in board.legal_moves():
                 board.push(move)
-                old_value = value
-                res = self.alpha_beta(board, depth - 1, alpha, beta, False)
-                value = max(value, res[1])
-                best_move = res[0]
-                if (value > old_value):
-                    best_move = move
+                _, new_value = self.alpha_beta(board, depth-1, alpha, beta, False)
                 board.pop()
-                if (value > beta):
-                    print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBest move : ", best_move)
-                    break
+                if new_value > value:
+                    value = new_value
+                    best_move = move
                 alpha = max(alpha, value)
-            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBest move : ", best_move)
-            return (best_move, value)
-        else:
-            value = [[], 1000000000]
-            for move in (self._board.legal_moves()):
-                board.push(move)
-                old_value = value
-                res = self.alpha_beta(board, depth - 1, alpha, beta, False)
-                value = min(value, res[1])
-                best_move = res[0]
-                if (value < old_value):
-                    best_move = move
-                board.pop()
-                if (value < alpha):
-                    print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBest move : ", best_move)
+                if alpha >= beta:
                     break
+            return best_move, value
+
+        else:
+            value = float('inf')
+            best_move = None
+            for move in board.legal_moves():
+                board.push(move)
+                _, new_value = self.alpha_beta(board, depth-1, alpha, beta, True)
+                board.pop()
+                if new_value < value:
+                    value = new_value
+                    best_move = move
                 beta = min(beta, value)
-            print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBest move : ", best_move)
-            return (best_move, value)
+                if alpha >= beta:
+                    break
+            return best_move, value
+
             
 
 

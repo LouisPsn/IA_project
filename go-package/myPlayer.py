@@ -30,9 +30,8 @@ class myPlayer(PlayerInterface):
             print("Referee told me to play but the game is over!")
             return "PASS" 
         moves = self._board.legal_moves() # Dont use weak_legal_moves() here!
-        max_depth = 1
+        max_depth = 2
         move = self.choice_alpha_beta(self._board, max_depth) 
-        print("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMOVE", move)
         self._board.push(move)
 
         # New here: allows to consider internal representations of moves
@@ -60,45 +59,41 @@ class myPlayer(PlayerInterface):
 
 
     def choice_alpha_beta(self, board, depth):
-        move = self.alpha_beta(board, depth, -1000000000, 1000000000, True)
-        return move[0]
+        best_move = board.legal_moves()[0]
+        _, move = self.alpha_beta(board, best_move, depth, -1000000000, 1000000000, True)
+        return move
 
 
 
-    def alpha_beta(self, board, depth, alpha, beta, maximizingPlayer):
-        if depth == 0 or board.is_game_over():
-            return board._historyMoveNames[-1], self.hand_made_heuristique(board, maximizingPlayer)
-
-        if maximizingPlayer:
-            value = float('-inf')
-            best_move = None
+    def alpha_beta(self, board, best_move, depth, alpha, beta, maximizingPlayer):
+        if ((depth == 0) or (board.is_game_over())):
+            return [self.hand_made_heuristique(board, maximizingPlayer), best_move]
+        if (maximizingPlayer):
+            value = -1000000000
             for move in board.legal_moves():
                 board.push(move)
-                _, new_value = self.alpha_beta(board, depth-1, alpha, beta, False)
+                old_value = value
+                value = max(value, self.alpha_beta(board, best_move, depth - 1, alpha, beta, False)[0])
                 board.pop()
-                if new_value > value:
-                    value = new_value
+                if (value > old_value):
                     best_move = move
+                if (value > beta):
+                    break # (* β cutoff *)
                 alpha = max(alpha, value)
-                if alpha >= beta:
-                    break
-            return best_move, value
-
+            return [value, best_move]
         else:
-            value = float('inf')
-            best_move = None
+            value = 1000000000
             for move in board.legal_moves():
                 board.push(move)
-                _, new_value = self.alpha_beta(board, depth-1, alpha, beta, True)
+                old_value = value
+                value = min(value, self.alpha_beta(board, best_move, depth - 1, alpha, beta, True)[0])
                 board.pop()
-                if new_value < value:
-                    value = new_value
+                if (value < old_value):
                     best_move = move
+                if (value < alpha):
+                    break # (* α cutoff *)
                 beta = min(beta, value)
-                if alpha >= beta:
-                    break
-            return best_move, value
-
+            return [value, best_move]
             
 
 

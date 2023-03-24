@@ -1,6 +1,7 @@
 ''''''
 import Goban 
 import myPlayer
+import randomPlayer
 import time
 from io import StringIO
 import sys
@@ -10,10 +11,12 @@ b = Goban.Board()
 players = []
 player1 = myPlayer.myPlayer()
 player1.newGame(Goban.Board._BLACK)
-players.append(player1)
 
-player2 = myPlayer.myPlayer()
+player2 = randomPlayer.myPlayer()
 player2.newGame(Goban.Board._WHITE)
+
+
+players.append(player1)
 players.append(player2)
 
 totalTime = [0,0] # total real time for each player

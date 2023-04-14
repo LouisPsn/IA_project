@@ -1,91 +1,58 @@
-Goban.py 
----------
-
-Fichier contenant les règles du jeu de GO avec les fonctions et méthodes pour parcourir (relativement) efficacement
-l'arbre de jeu, à l'aide de legal_moves() et push()/pop() comme vu en cours.
-
-Ce fichier sera utilisé comme arbitre dans le tournoi. Vous avez maintenant les fonctions de score implantés dedans.
-Sauf problème, ce sera la methode result() qui donnera la vainqueur quand is_game_over() sera Vrai.
-
-Vous avez un décompte plus précis de la victoire dans final_go_score()
-
-Pour vous aider à parcourir le plateau de jeu, si b est un Board(), vous pouvez avoir accès à la couleur de la pierre
-posée en (x,y) en utilisant b[Board.flatten((x,y))]
+BELLEC Gwendal
+PIERSON Louis
 
 
-GnuGo.py
---------
+Création d'une IA jouant au Go :
 
-Fichier contenant un ensemble de fonctions pour communiquer avec gnugo. Attention, il faut installer correctement (et
-à part gnugo sur votre machine).  Je l'ai testé sur Linux uniquement mais cela doit fonctionner avec tous les autres
-systèmes (même s'ils sont moins bons :)).
+Dans ce fichier ci-dessous nous allons vous présenter en détail les méthodes que nous avons utliser pour créer notre IA, faire en sorte qu'elle
+ait de bonnes prédictions et qu'elle ait une bonne complexité spatiale et surtout temporelle.
 
 
-starter-go.py
--------------
-
-Exemples de deux développements aléatoires (utilisant legal_moves et push/pop). Le premier utilise legal_moves et le
-second weak_legal_moves, qui ne garanti plus que le coup aléatoire soit vraiment légal (à cause des Ko).
-
-La première chose à faire est probablement de 
+Implémentation de l'algo-alpha :
+Tout d'abord nous avons implémenté un algorithme alpha-beta pour effectuer notre recherche de noeud optimal dans notre arbre de jeu.
+Il s'agit simplement d'une fontion récursive qui fait remonter le noeud optimal et son heuristique depuis la profondeur maximale prédéfinie ou
+depuis une fin de partie.
 
 
-localGame.py
-------------
-
-Permet de lancer un match de myPlayer contre lui même, en vérifiant les coups avec une instanciation de Goban.py comme
-arbitre. Vous ne devez pas modifier ce fichier pour qu'il fonctionne, sans quoi je risque d'avoir des problèmes pour
-faire entrer votre IA dans le tournoi.
+Implémentation de l'heuristique maison:
+Notre heuristique maison évalue un plateau de jeu par rapport à la différence de scores des deux joueurs, le but étant de trouver les plateaux où
+l'on augmente notre propre score ou les plateaux où l'on empêche l'adversairr d'augmenter son propre score.
 
 
-playerInterface.py
-------------------
-
-Classe abstraite, décrite dans le sujet, permettant à votre joueur d'implanter correctement les fonctions pour être
-utilisé dans localGame et donc, dans le tournoi. Attention, il faut bien faire attention aux coups internes dans Goban
-(appelés "flat") et qui sont utilisés dans legal_moves/weak_legal_moves et push/pop des coups externes qui sont
-utilisés dans l'interface (les named moves). En interne, un coup est un indice dans un tableau 1 dimension
--1, 0.._BOARDSIZE^2 et en externe (dans cette interface) les coups sont des chaines de caractères dans "A1", ..., "J9",
-"PASS". Il ne faut pas se mélanger les pinceaux.
+Amélioration de l'heuristique en diminuant l'heuristique des cases aux extrémités
+Cette heuristique permettait déjà de prendre les pions de l'adversaire si possible et de l'empêcher de nous prendre des pions. Cependant dans les cas où
+le score ne bouge peu importe on nous jouons et on l'adveraire joue, il peut être intéressant d'effctuer ou d'éviter de faire certains coups.
+Ainsi, les coups joués en bordure de plateau feront dimininuer notre heuristique lorsque que c'est nous qui le jouer et fetont augmenter notre heuristique
+lorsque que c'est l'adveraire qui le jouera. Donc à part en cas de tentative d'une prise d'un ou plusieurs pions ou en cas de défense d'un ou plusieurs
+pions. Enfin, la manière avec laquelle nous avons créé implémenter notre heuristique fait que notre IA jouera toujours (à part en cas de prise ou de
+défense de pions) à proximité d'un de ses pions ce qui a pour conséquence de générer un motif dès le début de partie voir des motifs en fin de partie.
 
 
-myPlayer.py
------------
-
-Fichier que vous devrez modifier pour y mettre votre IA pour le tournoi. En l'état actuel, il contient la copie du
-joueur randomPlayer.py
+Gestion des "PASS":
+Jouer un "PASS" a été implémenté de manière différente de placer un pion sur case. Notre IA joue "PASS" dans seulement deux cas distincts, si l'adversaire
+fait "PASS" et que nous avons plus de points que lui, dans ce cas nous jouous aussi "PASS" et si nous ne pouvons que jouer "PASS" nous jouons "PASS".
 
 
-randomPlayer.py
----------------
-
-Un joueur aléatoire que vous pourrez conserver tel quel
-
-
-gnugoPlayer.py
---------------
-
-Un joueur basé sur gnugo. Vous permet de vous mesurer à lui simplement.
+Gestion du temps maximal imparti:
+Comme indiqué dans le sujet, notre IA posséde un temps de calcul réel de 30min par partie. Ainsi si jamais nous dépassons un temps de calcul supérieur
+à 25min, nous limitons la profondeur de recherche dans l'algorithme alpha-beta à 2. Ce critère est très empirique, on part du principe que la puissance de
+calcul qui nous sera fourni sera très inférieur à celle dont nous disposons avec nos ordinateurs. Or avec une profondeur de 2 notre algorithme met quelques
+minutes à effectuer une partie, sachant que plus la partie avance, plus notre algorithme trouve un coup à jouer rapidement.
+On suppose qu'avec 25 minutes de partie déjà écoulées, 5min seront suffisante pour trouver les derrière coup qui ne seront à priori pas très couteux
+à trouver.
 
 
-namedGame.py
-------------
-
-Permet de lancer deux joueurs différents l'un contre l'autre.
-Il attent en argument les deux modules des deux joueurs à importer.
-
-
-EXEMPLES DE LIGNES DE COMMANDES:
-================================
-
-python3 localGame.py
---> Va lancer un match myPlayer.py contre myPlayer.py
-
-python3 namedGame.py myPlayer randomPlayer
---> Va lancer un match entre votre joueur (NOIRS) et le randomPlayer
- (BLANC)
-
- python3 namedGame gnugoPlayer myPlayer
- --> gnugo (level 0) contre votre joueur (très dur à battre)
+Profondeur maximale variable:
+Enfin nous avons implémenter une fonction choisissant notre profondeur maximale de recherche des coups avec l'algorithme alpha-beta. Ici aussi, la
+profondeur maximale de recherche est trouvée selon des critères très empirique. Nous partons du principe que la recherche d'un coup ne doit pas excéder
+la durée de recherche du premier coup pour une profondeur de 2. Or chercher un coup en début de partie pour un arbre de profondeur 2 correspond à parcourir
+un arbre de taille 81*80 (car nous avons d'abord 81 coups possibles car il y a 81 cases de plateaux si l'on ne compte pas l'action "PASS"). Ainsi, plus la
+partie avancera et plus le nombre de coups jouables sera petit et plus nombre pourront parcourir l'arbre profondément. Le critère étant que l'arbre à
+parcourir ne doit pas avoir plus de 81*80 feuilles.
 
 
+De quoi nous sommes le plus fier : la profondeur maximale variable
+Ce dont nous sommes le plus fier dans notre implémentation est la profondeur de recherche variable car elle permet de garder une bonne complexité temporelle
+en début et en fin de partie tout en ayant une IA qui pourra prédir plus de coup à l'avance en fin. Or prédir beaucoup de coup à l'avvance en fin de partie
+est très important car si nous avons un score proche de celui de notre adversaire, il s'agit du moment où nous pouvons lui prendre beaucoup de pions s'il
+joue mal ou il peut nous prendre beaucoup de pions si l'on joue mal.

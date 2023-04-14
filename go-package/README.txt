@@ -40,6 +40,9 @@ calcul qui nous sera fourni sera très inférieur à celle dont nous disposons a
 minutes à effectuer une partie, sachant que plus la partie avance, plus notre algorithme trouve un coup à jouer rapidement.
 On suppose qu'avec 25 minutes de partie déjà écoulées, 5min seront suffisante pour trouver les derrière coup qui ne seront à priori pas très couteux
 à trouver.
+En plus de cette sécurité à 25min de temps utilisé, nous rajoutons une deuxième sécurité de temps utilisé à 29min. À ce moment si ne calculons plus aucun
+coup optimal mais ne renvoyons plus que qu'un coup aléatoire parmis tous les coups disponibles ce qui demande relativement peu de temps de calculable et
+nous évite donc la discalification.
 
 
 Profondeur maximale variable:
